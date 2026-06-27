@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Advanced QR Code Generator Pro</title>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- QR Code Styling library (supports canvas + svg + rounded dots + download) -->
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+</head>
+<body>
+  <main class="app">
+    <section class="card">
+      <header class="card-header">
+        <h1 class="title">QR Code Generator Pro</h1>
+        <p class="subtitle">Real-time, responsive, export PNG/JPG/SVG, vCard, WiFi, Crypto & more.</p>
+      </header>
+
+      <div class="card-body">
+        <!-- Left: Controls -->
+        <form id="controls" class="controls" novalidate>
+          <div class="tabs" role="tablist" aria-label="QR data types">
+            <button type="button" class="tab active" data-type="url" role="tab" aria-selected="true">URL</button>
+            <button type="button" class="tab" data-type="vcard" role="tab" aria-selected="false">vCard</button>
+            <button type="button" class="tab" data-type="wifi" role="tab" aria-selected="false">WiFi</button>
+            <button type="button" class="tab" data-type="text" role="tab" aria-selected="false">Plain Text / Crypto</button>
+          </div>
+
+          <div class="form-section" id="type-fields">
+            <!-- URL -->
+            <div class="type-panel" data-panel="url">
+              <label for="url-input">URL</label>
+              <input id="url-input" name="url" type="url" placeholder="https://example.com" autocomplete="url" />
+            </div>
+
+            <!-- vCard -->
+            <div class="type-panel hidden" data-panel="vcard">
+              <label for="vc-name">Full name</label>
+              <input id="vc-name" name="vc-name" type="text" placeholder="Jane Doe" />
+
+              <label for="vc-org">Organization</label>
+              <input id="vc-org" name="vc-org" type="text" placeholder="Company Inc." />
+
+              <label for="vc-phone">Phone</label>
+              <input id="vc-phone" name="vc-phone" type="tel" placeholder="+1 555 555 5555" />
+
+              <label for="vc-email">Email</label>
+              <input id="vc-email" name="vc-email" type="email" placeholder="jane@example.com" />
+            </div>
+
+            <!-- WiFi -->
+            <div class="type-panel hidden" data-panel="wifi">
+              <label for="wifi-ssid">SSID</label>
+              <input id="wifi-ssid" name="wifi-ssid" type="text" placeholder="NetworkName" />
+
+              <label for="wifi-password">Password</label>
+              <input id="wifi-password" name="wifi-password" type="text" placeholder="password" />
+
+              <label for="wifi-encryption">Encryption</label>
+              <select id="wifi-encryption" name="wifi-encryption">
+                <option value="WPA">WPA/WPA2</option>
+                <option value="WEP">WEP</option>
+                <option value="nopass">None</option>
+              </select>
+            </div>
+
+            <!-- Plain Text / Crypto -->
+            <div class="type-panel hidden" data-panel="text">
+              <label for="text-input">Text or Crypto Address</label>
+              <textarea id="text-input" name="text" rows="4" placeholder="Any text or crypto address"></textarea>
+            </div>
+          </div>
+
+          <hr />
+
+          <div class="customization">
+            <div class="row">
+              <label for="size">Size (px)</label>
+              <input id="size" type="range" min="128" max="1024" value="300" />
+              <output id="size-output">300</output>
+            </div>
+
+            <div class="row">
+              <label for="ec-level">Error Correction</label>
+              <select id="ec-level">
+                <option value="L">L - Low</option>
+                <option value="M" selected>M - Medium</option>
+                <option value="Q">Q - Quartile</option>
+                <option value="H">H - High</option>
+              </select>
+            </div>
+
+            <div class="row colors">
+              <div>
+                <label for="fg-color">Foreground</label>
+                <input id="fg-color" type="color" value="#111827" />
+              </div>
+              <div>
+                <label for="bg-color">Background</label>
+                <input id="bg-color" type="color" value="#ffffff" />
+              </div>
+            </div>
+
+            <div class="row">
+              <label for="dot-style">Corner / Dot Style</label>
+              <select id="dot-style">
+                <option value="square">Square</option>
+                <option value="rounded" selected>Rounded</option>
+                <option value="dots">Dots</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="copy-data" type="button" class="btn secondary">Copy Data</button>
+            <div class="download-group">
+              <button id="download-png" type="button" class="btn">Download PNG</button>
+              <button id="download-jpg" type="button" class="btn">Download JPG</button>
+              <button id="download-svg" type="button" class="btn">Download SVG</button>
+            </div>
+          </div>
+
+          <div id="alerts" aria-live="polite" class="alerts"></div>
+        </form>
+
+        <!-- Right: Preview -->
+        <aside class="preview">
+          <div class="preview-card">
+            <div id="qr-wrap" class="qr-wrap" aria-hidden="false">
+              <!-- QR will be injected here by JS -->
+            </div>
+
+            <div class="meta">
+              <small class="muted">Rendered at <span id="render-size">300</span>px • <span id="render-ec">M</span></small>
+            </div>
+          </div>
+
+          <div class="loading" id="loading" aria-hidden="true">
+            <div class="spinner" role="status" aria-label="Rendering QR code"></div>
+            <small>Rendering…</small>
+          </div>
+
+          <div class="tooltip" id="copy-tooltip" role="status" aria-hidden="true">Copied to clipboard!</div>
+        </aside>
+      </div>
+
+      <footer class="card-footer">
+        <p class="footnote">Pro tip: Use high contrast colors for reliable scanning. For dynamic QR features, add a backend to track scans.</p>
+      </footer>
+    </section>
+  </main>
+
+  <!-- App script -->
+  <script src="app.js" defer></script>
+</body>
+</html>
